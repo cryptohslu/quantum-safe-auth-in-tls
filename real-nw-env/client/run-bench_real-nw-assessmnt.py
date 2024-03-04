@@ -1,11 +1,11 @@
 ##############################################################################################
-##      Title:                 Post-Quantum TLS Handshake Benchmarker                                                                             ##
-##                                                                                                                                                                                    ##
-##      Author:             Joshua Drexel, HSLU, Switzerland                                                                                              ##
-##                                                                                                                                                                                    ##
-##      Description:     Benchmarking Post-Quantum TLS Handshake performance using                                             ##
-##                              different signature algorithms with s_timer.                                                                                  ##
-##                                                                                                                                                                                   ##
+##      Title:           Post-Quantum TLS Handshake Benchmarker                             ##
+##                                                                                          ##
+##      Author:          Joshua Drexel, HSLU, Switzerland                                   ##
+##                                                                                          ##
+##      Description:     Benchmarking Post-Quantum TLS Handshake performance using          ##
+##                       different signature algorithms with s_timer.                       ##
+##                                                                                          ##
 ##############################################################################################
 
 import argparse

@@ -1,17 +1,17 @@
 ##############################################################################################
-##      Title:          Post-Quantum TLS Handshake Benchmarker                                                                                    ##
-##                                                                                                                                                                                    ##
-##      Author:         Joshua Drexel, HSLU, Switzerland                                                                                                  ##
-##                                                                                                                                                                                   ##
-##      Description:    Benchmarking Post-Quantum TLS Handshake performance using                                             ##
-##                      different signature algorithms with s_timer.                                                                                         ##
-##                                                                                                                                                                                  ##
-##      Prerequisites:                                                                                                                                                      ##
-##                      - Have the OQS-Provider for OpenSSL installed.                                                                              ##
-##                      - Have PATH and LD_LIBRARY_PATH adjusted to point to the OpenSSL                                        ##
-##                        version, which has the OQS-Provider activated                                                                               ##
-##                        (if multiple OpenSSL versions are installed).                                                                                    ##
-#############################################################################################
+##      Title:          Post-Quantum TLS Handshake Benchmarker                              ##
+##                                                                                          ##
+##      Author:         Joshua Drexel, HSLU, Switzerland                                    ##
+##                                                                                          ##
+##      Description:    Benchmarking Post-Quantum TLS Handshake performance using           ##
+##                      different signature algorithms with s_timer.                        ##
+##                                                                                          ##
+##      Prerequisites:                                                                      ##
+##                      - Have the OQS-Provider for OpenSSL installed.                      ##
+##                      - Have PATH and LD_LIBRARY_PATH adjusted to point to the OpenSSL    ##
+##                        version, which has the OQS-Provider activated                     ##
+##                        (if multiple OpenSSL versions are installed).                     ##
+##############################################################################################
 
 import argparse
 import os

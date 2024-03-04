@@ -1,7 +1,7 @@
 ##################################################################################
 ##	INTELLECTUAL PROPERTY NOTE						##
 ##										##
-##	Large parts of this Dockerfile originate from the 			##
+##	Some parts of this Dockerfile originate from the 			##
 ##	Open Quantum Safe "OpenSSL3" Demo [1] and were adapted to the 		##
 ##	needs of the Master's thesis by	Joshua Drexel at			##
 ##	Lucerne University of Applied Sciences and Arts				##
