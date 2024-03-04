@@ -1,0 +1,215 @@
+version: '3.8'
+
+services:
+  pqc-tls-server-rsa3072:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-RSA3072/server/server.key
+      -cert /pqc-tls-tests/pki/pki-RSA3072/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-RSA3072/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-RSA3072/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50001:4433"
+    restart: always
+  
+  pqc-tls-server-ECDSAprime256v1:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-ECDSAprime256v1/server/server.key
+      -cert /pqc-tls-tests/pki/pki-ECDSAprime256v1/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-ECDSAprime256v1/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-ECDSAprime256v1/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50002:4433"
+    restart: always
+
+  pqc-tls-server-dilithium2:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-dilithium2/server/server.key
+      -cert /pqc-tls-tests/pki/pki-dilithium2/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-dilithium2/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-dilithium2/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50003:4433"
+    restart: always
+
+  pqc-tls-server-dilithium3:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-dilithium3/server/server.key
+      -cert /pqc-tls-tests/pki/pki-dilithium3/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-dilithium3/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-dilithium3/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50004:4433"
+    restart: always
+
+  pqc-tls-server-dilithium5:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-dilithium5/server/server.key
+      -cert /pqc-tls-tests/pki/pki-dilithium5/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-dilithium5/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-dilithium5/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50005:4433"
+    restart: always
+
+  pqc-tls-server-falcon512:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-falcon512/server/server.key
+      -cert /pqc-tls-tests/pki/pki-falcon512/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-falcon512/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-falcon512/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50006:4433"
+    restart: always
+
+  pqc-tls-server-falcon1024:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-falcon1024/server/server.key
+      -cert /pqc-tls-tests/pki/pki-falcon1024/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-falcon1024/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-falcon1024/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50007:4433"
+    restart: always
+
+  pqc-tls-server-sphincssha2128fsimple:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-sphincssha2128fsimple/server/server.key
+      -cert /pqc-tls-tests/pki/pki-sphincssha2128fsimple/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-sphincssha2128fsimple/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-sphincssha2128fsimple/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50008:4433"
+    restart: always
+
+  pqc-tls-server-sphincssha2192fsimple:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-sphincssha2192fsimple/server/server.key
+      -cert /pqc-tls-tests/pki/pki-sphincssha2192fsimple/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-sphincssha2192fsimple/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-sphincssha2192fsimple/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50009:4433"
+    restart: always
+
+  pqc-tls-server-sphincssha2256fsimple:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-sphincssha2256fsimple/server/server.key
+      -cert /pqc-tls-tests/pki/pki-sphincssha2256fsimple/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-sphincssha2256fsimple/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-sphincssha2256fsimple/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50010:4433"
+    restart: always
+
+  pqc-tls-server-sphincssha2128ssimple:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-sphincssha2128ssimple/server/server.key
+      -cert /pqc-tls-tests/pki/pki-sphincssha2128ssimple/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-sphincssha2128ssimple/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-sphincssha2128ssimple/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50011:4433"
+    restart: always
+
+  pqc-tls-server-sphincssha2192ssimple:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-sphincssha2192ssimple/server/server.key
+      -cert /pqc-tls-tests/pki/pki-sphincssha2192ssimple/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-sphincssha2192ssimple/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-sphincssha2192ssimple/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50012:4433"
+    restart: always
+
+  pqc-tls-server-sphincssha2256ssimple:
+    image: pqc-tls-server
+    command: >
+      openssl s_server
+      -key /pqc-tls-tests/pki/pki-sphincssha2256ssimple/server/server.key
+      -cert /pqc-tls-tests/pki/pki-sphincssha2256ssimple/server/server.crt
+      -CAfile /pqc-tls-tests/pki/pki-sphincssha2256ssimple/ca/ca.crt
+      -chainCAfile /pqc-tls-tests/pki/pki-sphincssha2256ssimple/ica/ica.crt
+      -tls1_3 -verify 2 -verify_return_error -ignore_unexpected_eof
+    tty: true
+    networks:
+      - pqcnet
+    ports:
+      - "50013:4433"
+    restart: always
+
+networks:
+  pqcnet:
+    name: pqcnet
+    driver: bridge

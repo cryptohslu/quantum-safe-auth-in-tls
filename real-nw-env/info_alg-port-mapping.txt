@@ -1,0 +1,13 @@
+RSA:3072,50001
+ECDSAprime256v1,50002
+dilithium2,50003
+dilithium3,50004
+dilithium5,50005
+falcon512,50006
+falcon1024,50007
+sphincssha2128fsimple,50008
+sphincssha2192fsimple,50009
+sphincssha2256fsimple,50010
+sphincssha2128ssimple,50011
+sphincssha2192ssimple,50012
+sphincssha2256ssimple,50013

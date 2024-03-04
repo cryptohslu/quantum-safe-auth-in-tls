@@ -1,0 +1,15 @@
+PING 147.88.195.53 (147.88.195.53): 56 data bytes
+64 bytes from 147.88.195.53: seq=0 ttl=47 time=11.430 ms
+64 bytes from 147.88.195.53: seq=1 ttl=47 time=9.621 ms
+64 bytes from 147.88.195.53: seq=2 ttl=47 time=9.416 ms
+64 bytes from 147.88.195.53: seq=3 ttl=47 time=9.555 ms
+64 bytes from 147.88.195.53: seq=4 ttl=47 time=7.895 ms
+64 bytes from 147.88.195.53: seq=5 ttl=47 time=9.298 ms
+64 bytes from 147.88.195.53: seq=6 ttl=47 time=9.848 ms
+64 bytes from 147.88.195.53: seq=7 ttl=47 time=9.588 ms
+64 bytes from 147.88.195.53: seq=8 ttl=47 time=10.208 ms
+64 bytes from 147.88.195.53: seq=9 ttl=47 time=10.895 ms
+
+--- 147.88.195.53 ping statistics ---
+10 packets transmitted, 10 packets received, 0% packet loss
+round-trip min/avg/max = 7.895/9.775/11.430 ms

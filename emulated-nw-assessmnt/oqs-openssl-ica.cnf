@@ -1,0 +1,93 @@
+# This definition stops the following lines choking if HOME isn't
+# defined.
+HOME			= .
+
+# Use this in order to automatically load providers.
+openssl_conf = openssl_init
+
+# Comment out the next line to ignore configuration errors
+config_diagnostics = 1
+
+
+[openssl_init]
+providers=provider_sect
+ssl_conf=ssl_sect
+
+[ssl_sect]
+system_default=system_default_sect
+
+[system_default_sect]
+Groups=x25519_kyber768
+
+# List of providers to load
+[provider_sect]
+default = default_sect
+oqsprovider = oqsprovider_sect
+
+[default_sect]
+activate = 1
+
+[oqsprovider_sect]
+activate = 1
+
+#####################################
+[ ca ]                           # The default CA section
+default_ca = CA_default          # The default CA name
+
+[ CA_default ]                                           # Default settings for the intermediate CA
+dir		  = {path}				 # Placeholder to insert path
+certs             = $dir                                 # Certificates directory
+crl_dir           = $dir                                 # CRL directory
+new_certs_dir     = $dir	                         # New certificates directory
+database          = $dir/index.txt                       # Certificate index file
+serial            = $dir/serial                          # Serial number file
+RANDFILE          = $dir/.rand                   	 # Random number file
+private_key       = $dir/ica.key			 # Intermediate CA private key
+certificate       = $dir/ica.crt   			 # Intermediate CA certificate
+crl               = $dir/ica.crl		         # Intermediate CA CRL
+crlnumber         = $dir/crlnumber                       # Intermediate CA CRL number
+crl_extensions    = crl_ext                              # CRL extensions
+default_crl_days  = 30                                   # Default CRL validity days
+default_md        = sha256                               # Default message digest
+preserve          = no                                   # Preserve existing extensions
+email_in_dn       = no                                   # Exclude email from the DN
+name_opt          = ca_default                           # Formatting options for names
+cert_opt          = ca_default                           # Certificate output options
+policy            = policy_loose                         # Certificate policy
+
+[ policy_loose ]                                         # Policy for less strict validation
+countryName             = optional                       # Country is optional
+stateOrProvinceName     = optional                       # State or province is optional
+localityName            = optional                       # Locality is optional
+organizationName        = optional                       # Organization is optional
+organizationalUnitName  = optional                       # Organizational unit is optional
+commonName              = supplied                       # Must provide a common name
+emailAddress            = optional                       # Email address is optional
+
+[ req ]                                                  # Request settings
+default_bits        = 2048                               # Default key size
+distinguished_name  = req_distinguished_name             # Default DN template
+string_mask         = utf8only                           # UTF-8 encoding
+default_md          = sha256                             # Default message digest
+x509_extensions     = v3_intermediate_ca                 # Extensions for intermediate CA certificate
+
+[ req_distinguished_name ]                               # Template for the DN in the CSR
+countryName                     = CH
+stateOrProvinceName             = Zug
+localityName                    = Rotkreuz
+0.organizationName              = Lucerne University of Applied Sciences and Arts
+organizationalUnitName          = Applied Cyber Security Research Lab
+
+[ v3_intermediate_ca ]                                      # Intermediate CA certificate extensions
+subjectKeyIdentifier = hash                                 # Subject key identifier
+authorityKeyIdentifier = keyid:always,issuer                # Authority key identifier
+basicConstraints = critical, CA:true, pathlen:0             # Basic constraints for a CA
+keyUsage = critical, digitalSignature, cRLSign, keyCertSign # Key usage for a CA
+
+[ crl_ext ]                                                 # CRL extensions
+authorityKeyIdentifier=keyid:always                         # Authority key identifier
+
+[ server_cert ]                                             # Server certificate extensions
+basicConstraints = CA:FALSE                                 # Not a CA certificate
+keyUsage = critical, digitalSignature, keyEncipherment      # Key usage for a server cert
+authorityKeyIdentifier = keyid,issuer                       # Authority key identifier linking the certificate to the issuer's public key.

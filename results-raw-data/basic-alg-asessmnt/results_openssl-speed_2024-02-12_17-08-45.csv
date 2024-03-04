@@ -1,0 +1,121 @@
+Testrun for the Algorithm: rsa3072
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                   sign    verify    encrypt   decrypt   sign/s verify/s  encr./s  decr./s
+rsa  3072 bits 0.001495s 0.000030s 0.000033s 0.001513s    668.7  33004.3  30693.6    661.0
+                               keygen    encaps    decaps keygens/s  encaps/s  decaps/s
+                    rsa3072 0.154852s 0.000033s 0.001499s       6.5   30488.3     667.3
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+                    rsa3072 0.158848s 0.001496s 0.000030s       6.3     668.6   33202.3
+------------------------------
+Testrun for the Algorithm: ecdsap256
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                              sign    verify    sign/s verify/s
+ 256 bits ecdsa (nistp256)   0.0000s   0.0001s  51215.3  17800.2
+------------------------------
+Testrun for the Algorithm: dilithium2
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+                 dilithium2 0.000027s 0.000062s 0.000022s   37696.8   16125.7   44831.5
+------------------------------
+Testrun for the Algorithm: dilithium3
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+                 dilithium3 0.000043s 0.000100s 0.000037s   23099.5    9996.8   26732.5
+------------------------------
+Testrun for the Algorithm: dilithium5
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+                 dilithium5 0.000067s 0.000124s 0.000060s   14988.5    8090.8   16694.9
+------------------------------
+Testrun for the Algorithm: falcon512
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+                  falcon512 0.005988s 0.000217s 0.000039s     167.0    4610.1   25557.2
+------------------------------
+Testrun for the Algorithm: falcon1024
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+                 falcon1024 0.017802s 0.000429s 0.000081s      56.2    2331.0   12350.1
+------------------------------
+Testrun for the Algorithm: sphincssha2128fsimple
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+      sphincssha2128fsimple 0.000293s 0.006789s 0.000576s    3410.4     147.3    1736.8
+------------------------------
+Testrun for the Algorithm: sphincssha2192fsimple
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+      sphincssha2192fsimple 0.000436s 0.011758s 0.000836s    2292.0      85.0    1196.1
+------------------------------
+Testrun for the Algorithm: sphincssha2256fsimple
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+      sphincssha2256fsimple 0.001160s 0.024455s 0.000867s     861.7      40.9    1153.9
+------------------------------
+Testrun for the Algorithm: sphincssha2128ssimple
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+      sphincssha2128ssimple 0.018327s 0.140363s 0.000239s      54.6       7.1    4180.5
+------------------------------
+Testrun for the Algorithm: sphincssha2192ssimple
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+      sphincssha2192ssimple 0.027454s 0.263714s 0.000352s      36.4       3.8    2837.2
+------------------------------
+Testrun for the Algorithm: sphincssha2256ssimple
+version: 3.2.0
+built on: Tue Dec  5 23:13:48 2023 UTC
+options: bn(64,64)
+compiler: gcc -fPIC -pthread -m64 -Wa,--noexecstack -Wall -O3 -DOPENSSL_USE_NODELETE -DL_ENDIAN -DOPENSSL_PIC -DOPENSSL_BUILDING_OPENSSL -DNDEBUG
+CPUINFO: OPENSSL_ia32cap=0xfefa32034f8bffff:0x9c27ab
+                               keygen     signs    verify keygens/s    sign/s  verify/s
+      sphincssha2256ssimple 0.018320s 0.239940s 0.000479s      54.6       4.2    2089.3
+------------------------------
