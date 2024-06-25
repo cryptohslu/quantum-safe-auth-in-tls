@@ -26,7 +26,7 @@ CWD = Path.cwd()
 # Path to s_timer binary
 STIMER_BINARY = CWD / "tls-client" / "s_timer"
 # Path to namespace setup script
-NSPACE_SETUP = CWD / "virt-test-env" "namespace-setup.sh"
+NSPACE_SETUP = CWD / "virt-test-env" / "namespace-setup.sh"
 # Path to namespace cleanup script
 NSPACE_CLEANUP = CWD / "virt-test-env" / "namespace-cleanup.sh"
 # Path to general OpenSSL config file
@@ -300,7 +300,7 @@ def pki_setup(alg, algname, out_dir):
     with open(OSSL_RCA_CONFIG, "rt") as template_config:
         with open(ca_config, "wt") as new_config:
             for line in template_config:
-                new_config.write(line.replace("{path}", ca_path))
+                new_config.write(line.replace("{path}", str(ca_path)))
 
     # Create sub-directory for ICA, prepare file paths, create and init serial-number file
     ica_path = pki_path / "ica"
@@ -317,7 +317,7 @@ def pki_setup(alg, algname, out_dir):
     with open(OSSL_ICA_CONFIG, "rt") as template_config:
         with open(ica_config, "wt") as new_config:
             for line in template_config:
-                new_config.write(line.replace("{path}", ica_path))
+                new_config.write(line.replace("{path}", str(ica_path)))
 
     # Create sub-directory for server certificate, prepare file paths
     server_path = pki_path / "server"
@@ -573,19 +573,19 @@ def pki_setup(alg, algname, out_dir):
     return
 
 
-def namespaces_setup(retry):
+def namespaces_setup(has_failed):
     print("\033[1;34mINFO:\t\tSetting up namespaces.\033[0m", file=sys.stdout)
 
-    ns_process = subprocess.run(["bash", NSPACE_SETUP], capture_output=True)
+    ns_process = subprocess.run(["sh", NSPACE_SETUP], capture_output=True)
 
-    if ns_process.returncode != 0 and retry == False:
+    if ns_process.returncode != 0 and has_failed == False:
         print(
             "\033[1;33mWARNING:\tError during namespace setup. Will do cleanup and retry again.\033[0m",
             file=sys.stdout,
         )
         namespaces_cleanup()
         namespaces_setup(True)
-    elif ns_process.returncode != 0 and retry == True:
+    elif ns_process.returncode != 0 and has_failed == True:
         print(
             "\033[1;31mERROR:\t\tFailure during namespace setup. Cleanup did not help. Aborting.\033[0m",
             file=sys.stderr,
@@ -598,7 +598,7 @@ def namespaces_setup(retry):
 def namespaces_cleanup():
     print("\033[1;34mINFO:\t\tCleaning up namespaces.\033[0m", file=sys.stdout)
 
-    ns_process = subprocess.run(["bash", NSPACE_CLEANUP], capture_output=True)
+    ns_process = subprocess.run(["sh", NSPACE_CLEANUP], capture_output=True)
 
     if ns_process.returncode != 0:
         print(
@@ -791,7 +791,7 @@ if __name__ == "__main__":
 
     # Setup of namespaces and virtual Ethernet devices
     # Note: Perform a cleanup first, just to make sure to have a clean state
-    namespaces_cleanup()
+    #namespaces_cleanup()
     namespaces_setup(False)
 
     # Initialize network emulation on ns1 and ns2 with rate limit of 10 Gbit/s, 0 delay and 0 packet loss
