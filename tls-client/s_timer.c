@@ -199,6 +199,9 @@ int main(int argc, char *args[]) {
     return 1;
   }
 
+  // Enable detailed debug output
+  SSL_CTX_set_info_callback(ssl_ctx, SSL_info_callback);
+
   // Print OpenSSL version and build information
   printf("OpenSSL Version: %s\n", OpenSSL_version(OPENSSL_VERSION));
 
