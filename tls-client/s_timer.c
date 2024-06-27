@@ -19,11 +19,13 @@
 */
  
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <stdbool.h>
 #include <argp.h>
 #include <time.h>
 
+#include <openssl/conf.h>
 #include <openssl/ssl.h>
 #include <openssl/err.h>
 #include <openssl/provider.h>
