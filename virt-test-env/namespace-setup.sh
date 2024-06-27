@@ -19,6 +19,10 @@ sudo $IP -n ns1 link set dev veth1 up
 sudo $IP -n ns2 addr add 10.6.0.1/24 dev veth2
 sudo $IP -n ns2 link set dev veth2 up
 
+# Add routing tables between namespaces
+sudo $IP -n ns1 route add 10.6.0.0/24 dev veth1
+sudo $IP -n ns2 route add 10.5.0.0/24 dev veth2
+
 # Disable TCP Segmentation Offload (TSO), GSO and GRO
 sudo $IP netns exec ns1 ethtool -K veth1 gso off gro off tso off
 sudo $IP netns exec ns2 ethtool -K veth2 gso off gro off tso off
