@@ -51,14 +51,14 @@ tsa_policy3 = 1.2.3.4.5.7
 # .include fipsmodule.cnf
 
 [openssl_init]
-providers=provider_sect
-ssl_conf=ssl_sect
+providers = provider_sect
+ssl_conf = ssl_sect
 
 [ssl_sect]
-system_default=system_default_sect
+system_default = system_default_sect
 
 [system_default_sect]
-Groups=x25519_kyber768
+Groups = x25519_kyber768
 
 # List of providers to load
 [provider_sect]
@@ -69,7 +69,7 @@ oqsprovider = oqsprovider_sect
 activate = 1
 
 [oqsprovider_sect]
-activate = 1
+activate = 1
 
 ####################################################################
 [ ca ]
