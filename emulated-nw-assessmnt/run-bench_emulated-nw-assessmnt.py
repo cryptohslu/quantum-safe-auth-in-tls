@@ -1,25 +1,27 @@
 ##############################################################################################
-##      Title:          Post-Quantum TLS Handshake Benchmarker                              ##
+##      Title:          Post-Quantum TLS Handshake Benchmarker                              ##
 ##                                                                                          ##
 ##      Author:         Joshua Drexel, HSLU, Switzerland                                    ##
 ##                                                                                          ##
-##      Description:    Benchmarking Post-Quantum TLS Handshake performance using           ##
+##      Description:    Benchmarking Post-Quantum TLS Handshake performance using           ##
 ##                      different signature algorithms with s_timer.                        ##
 ##                                                                                          ##
 ##      Prerequisites:                                                                      ##
-##                      - Have the OQS-Provider for OpenSSL installed.                      ##
+##                      - Have the OQS-Provider for OpenSSL installed.                      ##
 ##                      - Have PATH and LD_LIBRARY_PATH adjusted to point to the OpenSSL    ##
 ##                        version, which has the OQS-Provider activated                     ##
 ##                        (if multiple OpenSSL versions are installed).                     ##
 ##############################################################################################
 
 import argparse
+import re
 import shutil
 import subprocess
 import sys
 import time
 from datetime import datetime
 from pathlib import Path
+
 
 CWD = Path.cwd()
 
@@ -49,12 +51,12 @@ TRADITIONAL_SIG_ALGS = []
 # TRADITIONAL_SIG_ALGS.append("ED448")
 # TRADITIONAL_SIG_ALGS.append("ED25519")
 TRADITIONAL_SIG_ALGS.append("RSA:2048")
-# TRADITIONAL_SIG_ALGS.append("RSA:3072")
+TRADITIONAL_SIG_ALGS.append("RSA:3072")
 # TRADITIONAL_SIG_ALGS.append("ECDSAprime256v1")
 # TRADITIONAL_SIG_ALGS.append("ECDSAsecp384r1")
 
 # Lists of Bitrate FLOAT (Mbit/s), Delay FLOAT (ms) and Packet Loss Rate FLOAT (percent) values to be emulated
-# The delay will be added to both veth devices, therefore RTT is approx. twice the delay
+# The delay will be added to both veth devices, therefore RTT is approx. twice the delay
 RATE_VALUES = [10000.0]
 DELAY_VALUES = [0.0, 5.0, 50.0]
 LOSS_VALUES = [0, 0.1, 1.0]
@@ -75,30 +77,27 @@ def run_benchmark_test(retry):
             wireshark_folder_path
             / f"server-{algname}_Rate-{rate}_Delay-{delay}_Loss-{loss}_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.pcap"
         )
-        dump_file = open(traffic_recordings_file_name_server, "a")
-        dump_file.close()
+        Path(traffic_recordings_file_name_server).touch()
 
         traffic_recordings_file_name_client = (
             wireshark_folder_path
             / f"client-{algname}_Rate-{rate}_Delay-{delay}_Loss-{loss}_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.pcap"
         )
-        dump_file = open(traffic_recordings_file_name_client, "a")
-        dump_file.close()
+        Path(traffic_recordings_file_name_client).touch()
 
         # Prepare tls session secrets file for later traffic decryption in Wireshark
         session_secrets_file_name = (
             wireshark_folder_path
             / f"{algname}_Rate-{rate}_Delay-{delay}_Loss-{loss}_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.secrets"
         )
-        secrets_file = open(session_secrets_file_name, "a")
-        secrets_file.close()
+        Path(session_secrets_file_name).touch()
 
         # Give "others" write permissions to recording file, otherwise tshark cannot record traffic (if the file is in a user's home-dir)
         Path.chmod(traffic_recordings_file_name_server, 0o666)
         Path.chmod(traffic_recordings_file_name_client, 0o666)
 
         # Start wireshark process in namespace ns1 (server)
-        # Note: Use Popen, as the process needs to run in background
+        # Note: Use Popen, as the process needs to run in background
         # fmt: off
         wireshark_server = subprocess.Popen(
             ["sudo", "ip", "netns", "exec", "ns1", "tshark", "-i", "veth1", "-w", traffic_recordings_file_name_server],
@@ -118,7 +117,7 @@ def run_benchmark_test(retry):
             sys.exit(-1)
 
         # Start wireshark process in namespace ns2 (client)
-        # Note: Use Popen, as the process needs to run in background
+        # Note: Use Popen, as the process needs to run in background
         # fmt: off
         wireshark_client = subprocess.Popen(
             ["sudo", "ip", "netns", "exec", "ns2", "tshark", "-i", "veth2", "-w", traffic_recordings_file_name_client],
@@ -185,7 +184,7 @@ def run_benchmark_test(retry):
         # Check if process start was successful
         if tls_server is None:
             print(
-                "\033[1;31mERROR:\t\tFailure during start of TLS server. Aborting.\033[0m",
+                "\033[1;31mERROR:\t\tFailure during start of TLS server. Aborting.\033[0m",
                 file=sys.stderr,
             )
             sys.exit(-1)
@@ -226,19 +225,20 @@ def run_benchmark_test(retry):
         # Save output line by line in array
         s_time_output = bytes.decode(tls_client.stdout.read(), "utf-8").splitlines()
 
-        # Check that OpenSSL 3.2.0 was used (no older version)
-        # Note: s_timer outputs the OpenSSL version in the first output line
+        # Check that OpenSSL >= 3.2.0 was used
+        # Note: s_timer outputs the OpenSSL version in the first output line
 
-        if s_time_output[0].find("OpenSSL 3.2.0 ") < 0:
+        openssl_version = extract_openssl_version(s_time_output[0])
+        if openssl_version < [3, 2, 0]:
             # Correct version string not found, abort
             print(
-                "\033[1;31mERROR:\t\tWrong OpenSSL version in s_timer. Aborting.\033[0m",
+                "\033[1;31mERROR:\t\tWrong OpenSSL version in s_timer. Aborting.\033[0m",
                 file=sys.stderr,
             )
             sys.exit(-1)
         else:
             # Check if provider could be loaded successfully
-            # Note: s_timer output if provider load was successful on the second line
+            # Note: s_timer output if provider load was successful on the second line
             if s_time_output[1].find("provider loaded successfully") < 0:
                 # Provider not found
                 print(
@@ -250,13 +250,12 @@ def run_benchmark_test(retry):
                 # Provider loaded successfully, print results
                 for result in s_time_output[2].split(","):
                     # s_timer outputs results as pairs of measurement:success (float:bool)
-                    # Note: If connection was unsuccessful (success=false), a dummy value of 0.0ms is returned as measurement
+                    # Note: If connection was unsuccessful (success=false), a dummy value of 0.0ms is returned as measurement
                     measurement, success = result.split(":")
-                    results_file = open(results_file_name, "a")
-                    results_file.write(
-                        f"{alg},{output_iterator},{rate},{delay},{loss},{success},{measurement}\n"
-                    )
-                    results_file.close()
+                    with open(results_file_name, "a") as results_file:
+                        results_file.write(
+                            f"{alg},{output_iterator},{rate},{delay},{loss},{success},{measurement}\n"
+                        )
                     output_iterator = output_iterator + 1
 
                 print(
@@ -266,7 +265,7 @@ def run_benchmark_test(retry):
                     file=sys.stdout,
                 )
 
-        # Terminate TLS server process
+        # Terminate TLS server process
         tls_server.terminate()
 
         # End of while loop
@@ -291,11 +290,9 @@ def pki_setup(alg, algname, out_dir):
     create_dir(ca_path)
     ca_cert = ca_path / "ca.crt"
     ca_key = ca_path / "ca.key"
-    serial_file = open(ca_path / "serial", "a")
-    serial_file.write("1000")
-    serial_file.close()
-    index_file = open(ca_path / "index.txt", "a")
-    index_file.close()
+    with open(ca_path / "serial", "a") as serial_file:
+        serial_file.write("1000")
+    Path(ca_path / "index.txt").touch()
     # Copy CA config, but set real CA path
     with open(OSSL_RCA_CONFIG, "rt") as template_config:
         with open(ca_config, "wt") as new_config:
@@ -308,11 +305,9 @@ def pki_setup(alg, algname, out_dir):
     ica_cert = ica_path / "ica.crt"
     ica_csr = ica_path / "ica.csr"
     ica_key = ica_path / "ica.key"
-    file = open(ica_path / "serial", "a")
-    file.write("1000")
-    file.close()
-    index_file = open(ica_path / "index.txt", "a")
-    index_file.close()
+    with open(ica_path / "serial", "a") as file:
+        file.write("1000")
+    Path(ica_path / "index.txt").touch()
     # Copy ICA config, but set real ICA path
     with open(OSSL_ICA_CONFIG, "rt") as template_config:
         with open(ica_config, "wt") as new_config:
@@ -335,7 +330,7 @@ def pki_setup(alg, algname, out_dir):
 
     ####################################################################
     # Create CA key and certificate
-    # Note: if/else is needed, because ECDSA needs additional arguments than EdDSA, RSA and PQC
+    # Note: if/else is needed, because ECDSA needs additional arguments than EdDSA, RSA and PQC
     if alg.startswith("ECDSA"):
         subject = (
             "/C=CH/ST=Zug/L=Rotkreuz/O=Lucerne University of Applied Sciences and Arts/OU=Applied Cyber Security Research Lab/CN="
@@ -392,6 +387,19 @@ def pki_setup(alg, algname, out_dir):
         # fmt: off
         ica_key_process = subprocess.run(
             ["openssl", "ecparam", "-name", alg[5:], "-genkey", "-out", ica_key],
+            capture_output=True,
+            text=True,
+        )
+        # fmt: on
+    elif alg.startswith("RSA"):
+        subject = (
+            "/C=CH/ST=Zug/L=Rotkreuz/O=Lucerne University of Applied Sciences and Arts/OU=Applied Cyber Security Research Lab/CN="
+            + alg
+            + " - Test Intermediate CA"
+        )
+        # fmt: off
+        ica_key_process = subprocess.run(
+            ["openssl", "genpkey", "-algorithm", alg[:3], "-pkeyopt", f"rsa_keygen_bits:{alg[4:]}", "-out", ica_key, "-config", ica_config],
             capture_output=True,
             text=True,
         )
@@ -459,6 +467,19 @@ def pki_setup(alg, algname, out_dir):
             text=True,
         )
         # fmt: on
+    elif alg.startswith("RSA"):
+        subject = (
+            "/C=CH/ST=Zug/L=Rotkreuz/O=Lucerne University of Applied Sciences and Arts/OU=Applied Cyber Security Research Lab/CN="
+            + alg
+            + " - Server Certificate"
+        )
+        # fmt: off
+        server_key_process = subprocess.run(
+            ["openssl", "genpkey", "-algorithm", alg[:3], "-pkeyopt", f"rsa_keygen_bits:{alg[4:]}", "-out", server_key, "-config", ica_config],
+            capture_output=True,
+            text=True,
+        )
+        # fmt: on
     else:
         subject = (
             "/C=CH/ST=Zug/L=Rotkreuz/O=Lucerne University of Applied Sciences and Arts/OU=Applied Cyber Security Research Lab/CN="
@@ -522,6 +543,19 @@ def pki_setup(alg, algname, out_dir):
             text=True,
         )
         # fmt: on
+    elif alg.startswith("RSA"):
+        subject = (
+            "/C=CH/ST=Zug/L=Rotkreuz/O=Lucerne University of Applied Sciences and Arts/OU=Applied Cyber Security Research Lab/CN="
+            + alg
+            + " - Client Certificate"
+        )
+        # fmt: off
+        client_key_process = subprocess.run(
+            ["openssl", "genpkey", "-algorithm", alg[:3], "-pkeyopt", f"rsa_keygen_bits:{alg[4:]}", "-out", client_key, "-config", ica_config],
+            capture_output=True,
+            text=True,
+        )
+        # fmt: on
     else:
         subject = (
             "/C=CH/ST=Zug/L=Rotkreuz/O=Lucerne University of Applied Sciences and Arts/OU=Applied Cyber Security Research Lab/CN="
@@ -576,16 +610,16 @@ def pki_setup(alg, algname, out_dir):
 def namespaces_setup(has_failed):
     print("\033[1;34mINFO:\t\tSetting up namespaces.\033[0m", file=sys.stdout)
 
-    ns_process = subprocess.run(["sh", NSPACE_SETUP], capture_output=True)
+    ns_process = subprocess.run(["bash", NSPACE_SETUP], capture_output=True)
 
-    if ns_process.returncode != 0 and has_failed == False:
+    if ns_process.returncode != 0 and not has_failed:
         print(
             "\033[1;33mWARNING:\tError during namespace setup. Will do cleanup and retry again.\033[0m",
             file=sys.stdout,
         )
         namespaces_cleanup()
         namespaces_setup(True)
-    elif ns_process.returncode != 0 and has_failed == True:
+    elif ns_process.returncode != 0 and has_failed:
         print(
             "\033[1;31mERROR:\t\tFailure during namespace setup. Cleanup did not help. Aborting.\033[0m",
             file=sys.stderr,
@@ -598,7 +632,7 @@ def namespaces_setup(has_failed):
 def namespaces_cleanup():
     print("\033[1;34mINFO:\t\tCleaning up namespaces.\033[0m", file=sys.stdout)
 
-    ns_process = subprocess.run(["sh", NSPACE_CLEANUP], capture_output=True)
+    ns_process = subprocess.run(["bash", NSPACE_CLEANUP], capture_output=True)
 
     if ns_process.returncode != 0:
         print(
@@ -614,7 +648,7 @@ def read_pq_sigalgs(sig_file):
     algs_from_file = []
     algs_supported = []
 
-    # First get the list of supported signature algorithms of the OpenSSL installation
+    # First get the list of supported signature algorithms of the OpenSSL installation
     process = subprocess.run(
         ["openssl", "list", "-signature-algorithms"], capture_output=True
     )
@@ -647,9 +681,7 @@ def read_pq_sigalgs(sig_file):
                 ),
                 file=sys.stderr,
             )
-            file.close()
             sys.exit(-1)
-    file.close()
     return algs_from_file
 
 
@@ -707,10 +739,21 @@ def ask_for_overwrite(path):
     return
 
 
+def extract_openssl_version(text):
+    pattern = r"OpenSSL (\d+)\.(\d+)\.(\d+)"
+    match = re.search(pattern, text)
+
+    if match:
+        version = [int(match.group(1)), int(match.group(2)), int(match.group(3))]
+        return version
+    else:
+        return None
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
-        prog="Post-Quantum TLS Handshake Benchmarker",
-        description="Benchmarking Post-Quantum TLS Handshake performance using different signature algorithms with OpenSSL s_time.",
+        prog="Post-Quantum TLS Handshake Benchmarker",
+        description="Benchmarking Post-Quantum TLS Handshake performance using different signature algorithms with OpenSSL s_time.",
     )
     parser.add_argument(
         "-rounds",
@@ -722,20 +765,23 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "-sigs",
-        help="path to file with list of PQ signature algorithms to be included in the tests",
+        help="path to file with list of PQ signature algorithms to be included in the tests",
         metavar="<file path>",
-        required=True,
+        default="sig-list-test.txt",
+        required=False,
     )
     parser.add_argument(
         "-out",
         help="path to directory where the results should be saved to",
         metavar="<dir path>",
-        required=True,
+        default="./tmp",
+        required=False,
     )
     parser.add_argument(
         "-rec",
         help="if set, the TLS traffic is dumped to a file and the session secrets are exported",
         action="store_true",
+        default=True,
         required=False,
     )
 
@@ -770,12 +816,11 @@ if __name__ == "__main__":
     results_file_name = (
         out_dir / f"results_{datetime.now().strftime("%Y-%m-%d_%H-%M-%S")}.csv"
     )
-    results_file = open(results_file_name, "a")
-    results_file.write(
-        "Signature Algorithm,Test Round,Rate Limit,Delay,Packet Loss,Success,Handshake Duration [ms]"
-        + "\n"
-    )
-    results_file.close()
+    with open(results_file_name, "a") as results_file:
+        results_file.write(
+            "Signature Algorithm,Test Round,Rate Limit,Delay,Packet Loss,Success,Handshake Duration [ms]"
+            + "\n"
+        )
 
     # If traffic is to be recorded, prepare folder
     if record_traffic:
@@ -786,12 +831,12 @@ if __name__ == "__main__":
     # Read the post-quantum signature algorithms from file and check if activated in oqs-provider
     pq_sig_algs = read_pq_sigalgs(sig_file)
 
-    # Add the reference algorithms (traditional crypto, provided in global variable) to the list
+    # Add the reference algorithms (traditional crypto, provided in global variable) to the list
     sig_algs = TRADITIONAL_SIG_ALGS + pq_sig_algs
 
     # Setup of namespaces and virtual Ethernet devices
-    # Note: Perform a cleanup first, just to make sure to have a clean state
-    #namespaces_cleanup()
+    # Note: Perform a cleanup first, just to make sure to have a clean state
+    namespaces_cleanup()
     namespaces_setup(False)
 
     # Initialize network emulation on ns1 and ns2 with rate limit of 10 Gbit/s, 0 delay and 0 packet loss
@@ -799,7 +844,7 @@ if __name__ == "__main__":
     subprocess.run([
         "sudo", "ip", "netns", "exec", "ns1", "tc", "qdisc",
         "add", "dev", "veth1", "root", "netem", "rate", "10000.0mbit",
-        "delay","0ms", "loss", "0%"
+        "delay", "0ms", "loss", "0%"
     ])
     subprocess.run([
         "sudo", "ip", "netns", "exec", "ns2", "tc", "qdisc",
@@ -807,7 +852,7 @@ if __name__ == "__main__":
         "delay", "0ms", "loss", "0%"
     ])
 
-    # Hard-Code MAC Addresses to prevent ARP resolutions which may cause the processes to hang, especially with high packet loss rates
+    # Hard-Code MAC Addresses to prevent ARP resolutions which may cause the processes to hang, especially with high packet loss rates
     subprocess.run([
         "sudo", "ip", "netns", "exec", "ns1", "ip", "neighbor",
         "add", "10.5.0.1", "lladdr", "00:00:00:00:00:02",
@@ -833,7 +878,7 @@ if __name__ == "__main__":
         else:
             algname = alg
 
-        # Setting up the PKI (CA, ICA and EE certificates)
+        # Setting up the PKI (CA, ICA and EE certificates)
         pki_setup(alg, algname, out_dir)
         pki_path = out_dir / f"pki-{algname}"
 
@@ -846,7 +891,7 @@ if __name__ == "__main__":
             for delay in DELAY_VALUES:
                 for loss in LOSS_VALUES:
                     print(
-                        "\033[1;34mINFO:\t\tRate = {}Mbit/s, Delay = {}ms, Packet Loss Rate = {}%.\033[0m".format(
+                        "\033[1;34mINFO:\t\tRate = {}Mbit/s, Delay = {}ms, Packet Loss Rate = {}%.\033[0m".format(
                             rate, delay, loss
                         ),
                         file=sys.stdout,
