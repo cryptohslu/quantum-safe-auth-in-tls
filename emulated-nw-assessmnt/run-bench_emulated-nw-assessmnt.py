@@ -22,7 +22,6 @@ import time
 from datetime import datetime
 from pathlib import Path
 
-
 CWD = Path.cwd()
 
 # Path to s_timer binary
@@ -49,17 +48,17 @@ MAX_HS_DUR = 1
 # Uncomment if an algorithm should be included in the test
 TRADITIONAL_SIG_ALGS = []
 # TRADITIONAL_SIG_ALGS.append("ED448")
-# TRADITIONAL_SIG_ALGS.append("ED25519")
+TRADITIONAL_SIG_ALGS.append("ED25519")
 TRADITIONAL_SIG_ALGS.append("RSA:2048")
-TRADITIONAL_SIG_ALGS.append("RSA:3072")
+# TRADITIONAL_SIG_ALGS.append("RSA:3072")
 # TRADITIONAL_SIG_ALGS.append("ECDSAprime256v1")
 # TRADITIONAL_SIG_ALGS.append("ECDSAsecp384r1")
 
 # Lists of Bitrate FLOAT (Mbit/s), Delay FLOAT (ms) and Packet Loss Rate FLOAT (percent) values to be emulated
 # The delay will be added to both veth devices, therefore RTT is approx. twice the delay
 RATE_VALUES = [10000.0]
-DELAY_VALUES = [0.0, 5.0, 50.0]
-LOSS_VALUES = [0, 0.1, 1.0]
+DELAY_VALUES = [0.0, 5.0, 10.0]  # , 5.0, 50.0]
+LOSS_VALUES = [0, 0.05, 0.1, 0.15]  # , 0.1, 1.0]
 
 
 def run_benchmark_test(retry):
@@ -156,10 +155,9 @@ def run_benchmark_test(retry):
             # fmt: off
             tls_server = subprocess.Popen(
                 [
-                    "sudo", "ip", "netns", "exec", "ns1", "openssl", "s_server", "-cert", server_cert,
-                    "-key", server_key, "-tls1_3", "-Verify", "2", "-verify_return_error", "-CAfile",
-                    ca_cert, "-chainCAfile", ica_cert, "-ignore_unexpected_eof", "-keylogfile",
-                    session_secrets_file_name, "-quiet"
+                    "sudo", f"OPENSSL_CONF={OSSL_CONFIG}", "ip", "netns", "exec", "ns1", "openssl", "s_server", "-cert",
+                    server_cert, "-key", server_key, "-tls1_3", "-Verify", "2", "-verify_return_error", "-CAfile",
+                    ca_cert, "-chainCAfile", ica_cert, "-ignore_unexpected_eof", "-keylogfile", session_secrets_file_name
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -169,9 +167,9 @@ def run_benchmark_test(retry):
             # fmt: off
             tls_server = subprocess.Popen(
                 [
-                    "sudo", "ip", "netns", "exec", "ns1", "openssl", "s_server", "-cert", server_cert,
-                    "-key", server_key, "-tls1_3", "-verify", "2", "-verify_return_error", "-CAfile",
-                    ca_cert, "-chainCAfile", ica_cert, "-ignore_unexpected_eof", "-quiet"
+                    "sudo", f"OPENSSL_CONF={OSSL_CONFIG}", "ip", "netns", "exec", "ns1", "openssl", "s_server", "-cert",
+                    server_cert, "-key", server_key, "-tls1_3", "-verify", "2", "-verify_return_error", "-CAfile",
+                    ca_cert, "-chainCAfile", ica_cert, "-ignore_unexpected_eof"
                 ],
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
@@ -248,9 +246,9 @@ def run_benchmark_test(retry):
                 sys.exit(-1)
             else:
                 # Provider loaded successfully, print results
-                for result in s_time_output[2].split(","):
+                for result in s_time_output[-1].split(","):
                     # s_timer outputs results as pairs of measurement:success (float:bool)
-                    # Note: If connection was unsuccessful (success=false), a dummy value of 0.0ms is returned as measurement
+                    # Note: If connection was unsuccessful (success=false), a value of -1.0ms is returned as measurement
                     measurement, success = result.split(":")
                     with open(results_file_name, "a") as results_file:
                         results_file.write(
@@ -259,9 +257,7 @@ def run_benchmark_test(retry):
                     output_iterator = output_iterator + 1
 
                 print(
-                    "\033[1;32mSUCCESS:\tOpen Rounds: {}. Results for {} with {}mbit rate limit, {}ms delay and {}% packet loss written to file.\n\033[0m".format(
-                        open_rounds, alg, rate, delay, loss
-                    ),
+                    f"SUCCESS:(Round {open_rounds}). {alg}, {rate}mbit, {delay}ms delay, {loss}% packet loss.",
                     file=sys.stdout,
                 )
 
@@ -667,18 +663,14 @@ def read_pq_sigalgs(sig_file):
                 algs_from_file.append(line.rstrip())
             else:
                 print(
-                    '\033[1;33mWARNING:\tAlgorithm "{}" not supported, removed from list.\033[0m'.format(
-                        algname
-                    ),
+                    f"WARNING:Algorithm {algname} not supported, removed from list.",
                     file=sys.stderr,
                 )
 
         # Check if there are signature algorithms found in the file provided, otherwise exit with error
         if not algs_from_file:
             print(
-                '\033[1;31mERROR:\t\tNo supported algorithms found in "{}". Aborting.\033[0m'.format(
-                    sig_file
-                ),
+                f"ERROR: No supported algorithms found in {sig_file}. Aborting.",
                 file=sys.stderr,
             )
             sys.exit(-1)
@@ -698,21 +690,17 @@ def create_dir(path):
             # Re-create the directory
             Path.mkdir(path)
             print(
-                '\033[1;34mINFO:\t\tFile/Directory "{}" overwritten.\033[0m'.format(
-                    path
-                ),
+                f"INFO: File/Directory {path} overwritten.",
                 file=sys.stdout,
             )
         elif overwriting == "no":
             print(
-                '\033[1;34mINFO:\t\tFile/Directory "{}" is not overwritten.\033[0m'.format(
-                    path
-                ),
+                f"INFO: File/Directory {path} is not overwritten.",
                 file=sys.stdout,
             )
         else:
             print(
-                "\033[1;31mERROR:\t\tFailure during file/directory operation. Aborting.\033[0m",
+                "ERROR: Failure during file/directory operation. Aborting.",
                 file=sys.stderr,
             )
             sys.exit(-1)
@@ -795,9 +783,7 @@ if __name__ == "__main__":
     # Make sure that the PQ signature algorithm file exists
     if not sig_file.is_file():
         print(
-            '\033[1;31mERROR:\t\tFile "{}" does not exist. Please provide a file with the post-quantum signature algorithms to be included in the tests.\033[0m'.format(
-                sig_file
-            ),
+            f"ERROR: File {sig_file} does not exist.",
             file=sys.stderr,
         )
         sys.exit(-1)
@@ -805,9 +791,7 @@ if __name__ == "__main__":
     # Check if output directory exists
     if not out_dir.is_dir():
         print(
-            '\033[1;31mERROR:\t\tDirectory "{}" does not exist. Please provide a directory to store the resulting files in.\033[0m'.format(
-                out_dir
-            ),
+            f"ERROR: Directory {out_dir} does not exist.",
             file=sys.stderr,
         )
         sys.exit(-1)
@@ -868,7 +852,7 @@ if __name__ == "__main__":
     # Perform benchmark test for each signature algorithm
     for alg in sig_algs:
         print(
-            '\033[1;34mINFO:\t\tSetting up "{}" PKI.\033[0m'.format(alg),
+            f"INFO: Setting up {alg} PKI.",
             file=sys.stdout,
         )
 
@@ -883,7 +867,7 @@ if __name__ == "__main__":
         pki_path = out_dir / f"pki-{algname}"
 
         print(
-            '\033[1;34mINFO:\t\tStarting "{}" benchmark tests.\033[0m'.format(alg),
+            f"INFO: Starting {alg} benchmark tests.",
             file=sys.stdout,
         )
         # Run s_timer benchmark test for each rate, delay and loss value
@@ -891,9 +875,7 @@ if __name__ == "__main__":
             for delay in DELAY_VALUES:
                 for loss in LOSS_VALUES:
                     print(
-                        "\033[1;34mINFO:\t\tRate = {}Mbit/s, Delay = {}ms, Packet Loss Rate = {}%.\033[0m".format(
-                            rate, delay, loss
-                        ),
+                        f"INFO: Rate = {rate}Mbit/s, Delay = {delay}ms, Packet Loss Rate = {loss}%.",
                         file=sys.stdout,
                     )
                     # Change network emulation to specified delay and loss
@@ -917,9 +899,7 @@ if __name__ == "__main__":
     namespaces_cleanup()
 
     print(
-        '\033[1;32mSUCCESS:\tResults were stored in "{}". Finished.\033[0m'.format(
-            results_file_name
-        ),
+        f"SUCCESS: Results were stored in {results_file_name.name}. Finished.",
         file=sys.stdout,
     )
     sys.exit(0)
