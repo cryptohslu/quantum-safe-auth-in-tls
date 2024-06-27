@@ -683,7 +683,7 @@ def ask_for_overwrite(path):
     yes = {"yes", "y", "ye"}
     no = {"no", "n", ""}
 
-    print_warning(f"Directory or file {path} already exists.", end="")
+    print_warning(f"Directory or file {path} already exists. ", end="")
     choice = input(
         colored(
             "Overwrite? (ALL subdirectories and files will be lost!) [y/N] ",
