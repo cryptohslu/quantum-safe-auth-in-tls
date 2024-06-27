@@ -1,8 +1,16 @@
-#!/bin/sh
+#!/bin/bash
 set -euo pipefail
 
 # Starting
 echo "Start cleaning up..."
+
+# We check if ns1 and ns2 namespaces exist
+netns=$(ip netns list | grep "ns[12]" || [[ $? == 1 ]])
+
+if [[ ${#netns} -eq 0 ]]; then
+    echo "Nothing to clean. Exiting..."
+    exit 0
+fi
 
 # Shutting down the veth devices
 sudo ip -n ns1 link set dev veth1 down
