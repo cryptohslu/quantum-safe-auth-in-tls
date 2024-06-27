@@ -22,6 +22,8 @@ import time
 from datetime import datetime
 from pathlib import Path
 
+from termcolor import colored, cprint
+
 CWD = Path.cwd()
 
 # Path to s_timer binary
@@ -59,6 +61,22 @@ TRADITIONAL_SIG_ALGS.append("RSA:2048")
 RATE_VALUES = [10000.0]
 DELAY_VALUES = [0.0, 5.0, 10.0]  # , 5.0, 50.0]
 LOSS_VALUES = [0, 0.05, 0.1, 0.15]  # , 0.1, 1.0]
+
+
+def print_error(msg, **kwargs):
+    cprint(msg, "light_red", attrs=["bold"], file=sys.stderr, **kwargs)
+
+
+def print_info(msg, **kwargs):
+    cprint(msg, "blue", file=sys.stdout, **kwargs)
+
+
+def print_warning(msg, **kwargs):
+    cprint(msg, "light_yellow", file=sys.stdout, **kwargs)
+
+
+def print_success(msg, **kwargs):
+    cprint(msg, "light_green", file=sys.stdout, **kwargs)
 
 
 def run_benchmark_test(retry):
@@ -109,9 +127,8 @@ def run_benchmark_test(retry):
         time.sleep(2)
 
         if wireshark_server is None:
-            print(
-                "\033[1;31mERROR:\t\tFailure during start of wireshark for server. Aborting.\033[0m",
-                file=sys.stderr,
+            print_error(
+                "ERROR: Failure during start of wireshark for server. Aborting."
             )
             sys.exit(-1)
 
@@ -129,9 +146,8 @@ def run_benchmark_test(retry):
         time.sleep(2)
 
         if wireshark_client is None:
-            print(
-                "\033[1;31mERROR:\t\tFailure during start of wireshark for client. Aborting.\033[0m",
-                file=sys.stderr,
+            print_error(
+                "ERROR: Failure during start of wireshark for client. Aborting."
             )
             sys.exit(-1)
 
@@ -144,7 +160,7 @@ def run_benchmark_test(retry):
         if open_rounds - SAMPLE_SIZE >= 0:
             # Another full SAMPLE_SIZE-rounds chunk to go
             run_rounds = SAMPLE_SIZE
-            open_rounds = open_rounds - SAMPLE_SIZE
+            open_rounds -= SAMPLE_SIZE
         else:
             # Run a last time with the left-over rounds to go
             run_rounds = open_rounds
@@ -181,10 +197,7 @@ def run_benchmark_test(retry):
 
         # Check if process start was successful
         if tls_server is None:
-            print(
-                "\033[1;31mERROR:\t\tFailure during start of TLS server. Aborting.\033[0m",
-                file=sys.stderr,
-            )
+            print_error("ERROR: Failure during start of TLS server. Aborting.")
             sys.exit(-1)
 
         # Start s_timer process in namespace ns2
@@ -206,18 +219,15 @@ def run_benchmark_test(retry):
         try:
             tls_client.wait(timeout=timeout)
         except subprocess.TimeoutExpired:
-            print(
-                f"\033[1;31mERROR:\t\tTimeout reached for {alg} with rate of {rate}, {delay}ms delay and {loss}% packet loss. Repeating the test.\033[0m",
-                file=sys.stderr,
+            print_error(
+                f"ERROR: Timeout reached for {alg} with rate of {rate}, {delay}ms delay and {loss}% packet loss. Repeating the test."
             )
-
             # End all processes
             tls_server.terminate()
             tls_client.terminate()
 
             # Adding up the failed rounds and start again
-            open_rounds = open_rounds + run_rounds
-
+            open_rounds += run_rounds
             continue
 
         # Save output line by line in array
@@ -229,20 +239,14 @@ def run_benchmark_test(retry):
         openssl_version = extract_openssl_version(s_time_output[0])
         if openssl_version < [3, 2, 0]:
             # Correct version string not found, abort
-            print(
-                "\033[1;31mERROR:\t\tWrong OpenSSL version in s_timer. Aborting.\033[0m",
-                file=sys.stderr,
-            )
+            print_error("ERROR: Wrong OpenSSL version in s_timer. Aborting.")
             sys.exit(-1)
         else:
             # Check if provider could be loaded successfully
             # Note: s_timer output if provider load was successful on the second line
             if s_time_output[1].find("provider loaded successfully") < 0:
                 # Provider not found
-                print(
-                    "\033[1;31mERROR:\t\tOQS-Provider in s_timer not loaded. Aborting.\033[0m",
-                    file=sys.stderr,
-                )
+                print_error("ERROR: OQS-Provider in s_timer not loaded. Aborting.")
                 sys.exit(-1)
             else:
                 # Provider loaded successfully, print results
@@ -256,9 +260,8 @@ def run_benchmark_test(retry):
                         )
                     output_iterator = output_iterator + 1
 
-                print(
-                    f"SUCCESS:(Round {open_rounds}). {alg}, {rate}mbit, {delay}ms delay, {loss}% packet loss.",
-                    file=sys.stdout,
+                print_success(
+                    f"SUCCESS: (Round {rounds - open_rounds:{len(str(rounds))}}). {alg}, {rate}mbit, {delay}ms delay, {loss}% packet loss."
                 )
 
         # Terminate TLS server process
@@ -366,10 +369,7 @@ def pki_setup(alg, algname, out_dir):
     if ca_cert_process.returncode != 0:
         # Print the error messages from subprocess
         print(ca_cert_process.stderr)
-        print(
-            "\033[1;31mERROR:\t\tError during CA setup. Aborting.\033[0m",
-            file=sys.stderr,
-        )
+        print_error("ERROR: Error during CA setup. Aborting.")
         sys.exit(-1)
 
     ####################################################################
@@ -442,10 +442,7 @@ def pki_setup(alg, algname, out_dir):
         print(ica_key_process.stderr)
         print(ica_csr_process.stderr)
         print(ica_cert_process.stderr)
-        print(
-            "\033[1;31mERROR:\t\tError during ICA setup. Aborting.\033[0m",
-            file=sys.stderr,
-        )
+        print_error("ERROR: Error during ICA setup. Aborting.")
         sys.exit(-1)
 
     ####################################################################
@@ -518,10 +515,7 @@ def pki_setup(alg, algname, out_dir):
         print(server_key_process.stderr)
         print(server_csr_process.stderr)
         print(server_cert_process.stderr)
-        print(
-            "\033[1;31mERROR:\t\tError during server certificate setup. Aborting.\033[0m",
-            file=sys.stderr,
-        )
+        print_error("ERROR: Error during server certificate setup. Aborting.")
         sys.exit(-1)
 
     ####################################################################
@@ -594,31 +588,26 @@ def pki_setup(alg, algname, out_dir):
         print(client_key_process.stderr)
         print(client_csr_process.stderr)
         print(client_cert_process.stderr)
-        print(
-            "\033[1;31mERROR:\t\tError during server certificate setup. Aborting.\033[0m",
-            file=sys.stderr,
-        )
+        print_error("ERROR: Error during server certificate setup. Aborting.")
         sys.exit(-1)
 
     return
 
 
 def namespaces_setup(has_failed):
-    print("\033[1;34mINFO:\t\tSetting up namespaces.\033[0m", file=sys.stdout)
+    print_info("INFO: Setting up namespaces.")
 
     ns_process = subprocess.run(["bash", NSPACE_SETUP], capture_output=True)
 
     if ns_process.returncode != 0 and not has_failed:
-        print(
-            "\033[1;33mWARNING:\tError during namespace setup. Will do cleanup and retry again.\033[0m",
-            file=sys.stdout,
+        print_warning(
+            "WARNING: Error during namespace setup. Will do cleanup and retry again."
         )
         namespaces_cleanup()
         namespaces_setup(True)
     elif ns_process.returncode != 0 and has_failed:
-        print(
-            "\033[1;31mERROR:\t\tFailure during namespace setup. Cleanup did not help. Aborting.\033[0m",
-            file=sys.stderr,
+        print_error(
+            "ERROR: Failure during namespace setup. Cleanup did not help. Aborting."
         )
         sys.exit(-1)
 
@@ -626,17 +615,11 @@ def namespaces_setup(has_failed):
 
 
 def namespaces_cleanup():
-    print("\033[1;34mINFO:\t\tCleaning up namespaces.\033[0m", file=sys.stdout)
-
+    print_info("INFO: Cleaning up namespaces.")
     ns_process = subprocess.run(["bash", NSPACE_CLEANUP], capture_output=True)
-
     if ns_process.returncode != 0:
-        print(
-            "\033[1;31mERROR:\t\tFailure during namespace cleanup. Aborting.\033[0m",
-            file=sys.stderr,
-        )
+        print_error("ERROR: Failure during namespace cleanup. Aborting.")
         sys.exit(-1)
-
     return
 
 
@@ -662,16 +645,14 @@ def read_pq_sigalgs(sig_file):
                 # Algorithm is supported, add it to the list
                 algs_from_file.append(line.rstrip())
             else:
-                print(
-                    f"WARNING:Algorithm {algname} not supported, removed from list.",
-                    file=sys.stderr,
+                print_warning(
+                    f"WARNING: Algorithm {algname} not supported, removed from list."
                 )
 
         # Check if there are signature algorithms found in the file provided, otherwise exit with error
         if not algs_from_file:
-            print(
-                f"ERROR: No supported algorithms found in {sig_file}. Aborting.",
-                file=sys.stderr,
+            print_error(
+                f"ERROR: No supported algorithms found in {sig_file}. Aborting."
             )
             sys.exit(-1)
     return algs_from_file
@@ -689,20 +670,11 @@ def create_dir(path):
 
             # Re-create the directory
             Path.mkdir(path)
-            print(
-                f"INFO: File/Directory {path} overwritten.",
-                file=sys.stdout,
-            )
+            print_info(f"INFO: File/Directory {path} overwritten.")
         elif overwriting == "no":
-            print(
-                f"INFO: File/Directory {path} is not overwritten.",
-                file=sys.stdout,
-            )
+            print_info(f"INFO: File/Directory {path} is not overwritten.")
         else:
-            print(
-                "ERROR: Failure during file/directory operation. Aborting.",
-                file=sys.stderr,
-            )
+            print_error("ERROR: Failure during file/directory operation. Aborting.")
             sys.exit(-1)
     return
 
@@ -711,8 +683,12 @@ def ask_for_overwrite(path):
     yes = {"yes", "y", "ye"}
     no = {"no", "n", ""}
 
+    print_warning(f"Directory or file {path} already exists.", end="")
     choice = input(
-        f'Directory or file "{path}" already exists. Should it be overwritten (ALL subdirectories and files will be lost!)? [y/N] '
+        colored(
+            "Overwrite? (ALL subdirectories and files will be lost!) [y/N] ",
+            "light_yellow",
+        )
     ).lower()
 
     if choice in yes:
@@ -720,9 +696,7 @@ def ask_for_overwrite(path):
     elif choice in no:
         return "no"
     else:
-        print(
-            "\033[1;34mINFO:\t\tPlease respond with yes or no.\033[0m", file=sys.stdout
-        )
+        print_info("INFO: Please respond with yes or no.")
         ask_for_overwrite(path)
     return
 
@@ -782,18 +756,12 @@ if __name__ == "__main__":
 
     # Make sure that the PQ signature algorithm file exists
     if not sig_file.is_file():
-        print(
-            f"ERROR: File {sig_file} does not exist.",
-            file=sys.stderr,
-        )
+        print_error(f"ERROR: File {sig_file} does not exist.")
         sys.exit(-1)
 
     # Check if output directory exists
     if not out_dir.is_dir():
-        print(
-            f"ERROR: Directory {out_dir} does not exist.",
-            file=sys.stderr,
-        )
+        print_error(f"ERROR: Directory {out_dir} does not exist.")
         sys.exit(-1)
 
     # Prepare file for benchmark results
@@ -851,10 +819,7 @@ if __name__ == "__main__":
 
     # Perform benchmark test for each signature algorithm
     for alg in sig_algs:
-        print(
-            f"INFO: Setting up {alg} PKI.",
-            file=sys.stdout,
-        )
+        print_info(f"INFO: Setting up {alg} PKI.")
 
         # For RSA, replace ":" with "" for the alg name used in the file paths
         if alg.startswith("RSA"):
@@ -866,17 +831,13 @@ if __name__ == "__main__":
         pki_setup(alg, algname, out_dir)
         pki_path = out_dir / f"pki-{algname}"
 
-        print(
-            f"INFO: Starting {alg} benchmark tests.",
-            file=sys.stdout,
-        )
+        print_info(f"INFO: Starting {alg} benchmark tests.")
         # Run s_timer benchmark test for each rate, delay and loss value
         for rate in RATE_VALUES:
             for delay in DELAY_VALUES:
                 for loss in LOSS_VALUES:
-                    print(
-                        f"INFO: Rate = {rate}Mbit/s, Delay = {delay}ms, Packet Loss Rate = {loss}%.",
-                        file=sys.stdout,
+                    print_info(
+                        f"INFO: Rate = {rate}Mbit/s, Delay = {delay}ms, Packet Loss Rate = {loss}%."
                     )
                     # Change network emulation to specified delay and loss
                     # fmt: off
@@ -898,8 +859,7 @@ if __name__ == "__main__":
     # Cleaning up namespaces and virtual Ethernet devices
     namespaces_cleanup()
 
-    print(
-        f"SUCCESS: Results were stored in {results_file_name.name}. Finished.",
-        file=sys.stdout,
+    print_success(
+        f"SUCCESS: Results were stored in {results_file_name.name}. Finished."
     )
     sys.exit(0)
