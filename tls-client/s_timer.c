@@ -199,9 +199,6 @@ int main(int argc, char *args[]) {
     return 1;
   }
 
-  // Enable detailed debug output
-  SSL_CTX_set_info_callback(ssl_ctx, SSL_info_callback);
-
   // Print OpenSSL version and build information
   printf("OpenSSL Version: %s\n", OpenSSL_version(OPENSSL_VERSION));
 
@@ -298,7 +295,7 @@ int main(int argc, char *args[]) {
     if (!ssl) {
       // Handshake unsuccessful
       conn_success[measurements] = false;
-      handshake_times_ms[measurements] = 0.0;
+      handshake_times_ms[measurements] = -1.0;
     } else {
       // Handshake successful
       conn_success[measurements] = true;
