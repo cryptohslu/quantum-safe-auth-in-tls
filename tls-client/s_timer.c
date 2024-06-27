@@ -8,7 +8,7 @@
  */
  
  /*
-  * ADDITIONAL COPYRIGHT NOTICE
+  * ADDITIONAL COPYRIGHT NOTICE
   *
   * Many parts of this code originate from
   * https://github.com/xvzcf/pq-tls-benchmark/blob/master/emulation-exp/code/sig/s_timer.c,
@@ -31,13 +31,13 @@
 #define NS_IN_MS 1000000.0
 #define MS_IN_S 1000
 
-// Command Line Argument Parser
+// Command Line Argument Parser
 const char *argp_program_version = "s_timer-0.0.1";
 const char *argp_program_bug_address = "joshua.drexel@stud.hslu.ch";
-static char doc[] = "This is an adaption of the OpenSSL s_time program. This program performs an mTLS handshake and measures the time it takes to complete the handshake.";
+static char doc[] = "This is an adaption of the OpenSSL s_time program. This program performs an mTLS handshake and measures the time it takes to complete the handshake.";
 static char args_doc[] = "-h HOST:PORT -r ROUNDS --config=PATH --rootcert=PATH --chaincert=PATH --cert=PATH --key=PATH";
 static struct argp_option options[] = { 
-    { "host", 'h', "IP:PORT", 0, "Destination host IP address and Port." },
+    { "host", 'h', "IP:PORT", 0, "Destination host IP address and Port." },
     { "rounds", 'r', "INT", 0, "Number of rounds the test should be repeated." },
     { "config", 1, "PATH", 0, "Path to openssl config file that has the oqs-provider enabled." },
     { "rootcert", 2, "PATH", 0, "Path to the Root-CA certificate." },
@@ -107,7 +107,7 @@ int loadOQSProvider(const char *providerPath) {
     return 0;
 }
 
-// This is the function for which the time is measured, 
+// This is the function for which the time is measured,
 // therefore keep it as clean as possible
 SSL* do_tls_handshake(SSL_CTX* ssl_ctx)
 {
@@ -156,7 +156,7 @@ int main(int argc, char *args[])
     int ret = -1;
     SSL_CTX* ssl_ctx = 0;
     
-    // Prepare for CLI arguments parsing
+    // Prepare for CLI arguments parsing
     arguments.host_name= "";
     arguments.rounds = 1;
     arguments.config_file = "";
@@ -168,13 +168,13 @@ int main(int argc, char *args[])
     // Parse the CLI arguments
     argp_parse(&argp, argc, args, 0, 0, &arguments);
     
-    // Counter for number of measurements taken (performed rounds)
+    // Counter for number of measurements taken (performed rounds)
     size_t measurements = 0;
     
-    // Fix cipher suite
+    // Fix cipher suite
     const char* ciphersuites = "TLS_AES_256_GCM_SHA384";
     
-    // Fix KEX mechanism
+    // Fix KEX mechanism
     const char* kex = "x25519_kyber768";
     
     const SSL_METHOD* ssl_meth = TLS_client_method();
@@ -222,7 +222,7 @@ int main(int argc, char *args[])
         goto ossl_error;
     }
 
-    // Load CA certificate as trust anchor
+    // Load CA certificate as trust anchor
     ret = SSL_CTX_load_verify_locations(ssl_ctx, arguments.ca_cert, 0);
     if(ret <= 0)
     {
@@ -273,7 +273,7 @@ int main(int argc, char *args[])
     
     SSL_CTX_set_verify(ssl_ctx, SSL_VERIFY_PEER, NULL);
     
-    // Load OQS-Provider
+    // Load OQS-Provider
     const char *providerPath = arguments.config_file;
     if (loadOQSProvider(providerPath) == 0) {
         printf("OQS provider loaded successfully.\n");
@@ -289,12 +289,12 @@ int main(int argc, char *args[])
         ssl = do_tls_handshake(ssl_ctx);
         clock_gettime(CLOCK_MONOTONIC_RAW, &finish);
         if (!ssl) { 
-        // Handshake unsuccessful
+        // Handshake unsuccessful
             conn_success[measurements] = false;
             handshake_times_ms[measurements] = 0.0;
         } 
         else { 
-        // Handshake successful
+        // Handshake successful
             conn_success[measurements] = true;
             handshake_times_ms[measurements] = ((finish.tv_sec - start.tv_sec) * MS_IN_S) + ((finish.tv_nsec - start.tv_nsec) / NS_IN_MS);
             
@@ -308,8 +308,8 @@ int main(int argc, char *args[])
             SSL_free(ssl);
         }
         
-        // Go to next test round
-        // Note: Unsuccessful connections are also counted as a test round
+        // Go to next test round
+        // Note: Unsuccessful connections are also counted as a test round
         measurements++;
     }
 
